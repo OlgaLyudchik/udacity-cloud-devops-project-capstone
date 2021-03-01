@@ -1,0 +1,3 @@
+.env
+/weather-app/node_modules
+/weather-app/package-lock.json
