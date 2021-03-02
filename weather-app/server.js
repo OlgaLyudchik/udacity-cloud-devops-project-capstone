@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const request = require('request');
 var path = require('path');
 const app = express()
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 const apiKey = process.env.API_KEY
 
 app.set('views', path.join(__dirname, 'views'));
