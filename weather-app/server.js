@@ -37,4 +37,4 @@ app.post('/', function (req, res) {
 
 app.listen(port, function () {
     console.log(`Weather application is listening on port ${port}...`);
-});
+})
