@@ -32,8 +32,16 @@ pipeline {
             steps {
                 echo 'Pushing docker image'
                 withDockerRegistry([ url: '', credentialsId: 'dockerHubCredentials']) {
-                    sh "docker tag weather-app:latest olyudchik/weather-app"
+                    sh 'docker tag weather-app:latest olyudchik/weather-app'
                     sh 'docker push olyudchik/weather-app'
+                }
+            }
+        }
+        stage('Create Config File'){
+            steps{
+                echo 'Creating kube config file'
+                withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
+                    sh 'aws eks --region us-west-2 update-kubeconfig --name weather-app'
                 }
             }
         }
