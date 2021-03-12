@@ -38,7 +38,7 @@ pipeline {
             }
         }
         stage('Create Config File'){
-            steps{
+            steps {
                 echo 'Creating kube config file'
                 withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
                     sh 'aws eks --region us-west-2 update-kubeconfig --name weather-app'
@@ -46,7 +46,7 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps{
+            steps {
                 echo 'Deploying to AWS EKS'
                 withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
                     sh 'kubectl config use-context arn:aws:eks:us-west-2:816520931486:cluster/weather-app'
@@ -60,6 +60,12 @@ pipeline {
                     sh 'kubectl get pod -o wide'
                     sh 'kubectl get services'
                 }
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing if weather-app is running'
+                sh 'curl -Is http://a301b73f378d441788b0833da7563003-1345712646.us-west-2.elb.amazonaws.com:3000 | head -n 1'
             }
         }
     }
