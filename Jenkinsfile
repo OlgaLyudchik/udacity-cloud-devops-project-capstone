@@ -7,7 +7,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('weather-app') {
-                    echo "Building weather-app"
+                    echo 'Building weather-app'
                     sh 'npm --version'
                     sh 'node --version'
                     sh 'npm install'
@@ -17,7 +17,7 @@ pipeline {
         stage('Lint') {
             steps {
                 dir('weather-app') {
-                    echo "Linting weather-app"
+                    echo 'Linting weather-app'
                     sh 'npm run lint'
                 }
             }
@@ -42,6 +42,23 @@ pipeline {
                 echo 'Creating kube config file'
                 withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
                     sh 'aws eks --region us-west-2 update-kubeconfig --name weather-app'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps{
+                echo 'Deploying to AWS EKS'
+                withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
+                    sh 'kubectl config use-context arn:aws:eks:us-west-2:816520931486:cluster/weather-app'
+                    sh 'kubectl apply -f deployment/config.yml'
+                    sh 'kubectl apply -f deployment/secret.yml'
+                    sh 'kubectl apply -f deployment/deployment.yml'
+                    sh 'kubectl apply -f deployment/service.yml'
+                    sh 'kubectl wait --for=condition=Ready --timeout=-1s pod -l app=weather-app'
+                    sh 'kubectl get nodes'
+                    sh 'kubectl get deployments'
+                    sh 'kubectl get pod -o wide'
+                    sh 'kubectl get services'
                 }
             }
         }
