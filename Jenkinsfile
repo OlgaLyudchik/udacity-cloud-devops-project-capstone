@@ -1,3 +1,4 @@
+def String image = ''
 def String hostname = ''
 pipeline {
     agent any
@@ -27,14 +28,19 @@ pipeline {
             steps {
                 echo 'Building docker image'
                 sh 'docker build -t weather-app .'
+                script {
+                    image = sh(script:'echo "olyudchik/weather-app:$(date +%Y.%m.%d-%H.%M)-$(git rev-parse --short HEAD)"', returnStdout: true).trim().toLowerCase()
+                }
+                echo "Docker image: ${image}"
             }
         }
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing docker image'
                 withDockerRegistry([ url: '', credentialsId: 'dockerHubCredentials']) {
-                    sh 'docker tag weather-app:latest olyudchik/weather-app'
-                    sh 'docker push olyudchik/weather-app'
+                    sh "docker tag weather-app:latest ${image}"
+                    sh 'docker image list'
+                    sh "docker push ${image}"
                 }
             }
         }
