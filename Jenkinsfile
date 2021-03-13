@@ -1,3 +1,4 @@
+def String hostname = ''
 pipeline {
     agent any
     environment {
@@ -59,13 +60,17 @@ pipeline {
                     sh 'kubectl get deployments'
                     sh 'kubectl get pod -o wide'
                     sh 'kubectl get services'
+                    script {
+                        hostname = sh(script:'kubectl get service weather-app -o jsonpath={.status.loadBalancer.ingress[0].hostname}', returnStdout: true)
+                    }
                 }
+                echo "Access weather-app here: http://${hostname}:3000"
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing if weather-app is running'
-                sh 'curl -Is http://a301b73f378d441788b0833da7563003-1345712646.us-west-2.elb.amazonaws.com:3000 | head -n 1'
+                sh "curl -Is http://${hostname}:3000 | head -n 1"
             }
         }
     }
