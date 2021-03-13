@@ -79,5 +79,11 @@ pipeline {
                 sh "curl -Is http://${hostname}:3000 | head -n 1"
             }
         }
+        stage("Cleanup") {
+            steps {
+                echo 'Cleaning up'
+                sh 'docker system prune -f'
+            }
+        }
     }
 }
