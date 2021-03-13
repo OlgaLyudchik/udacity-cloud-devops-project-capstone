@@ -63,7 +63,6 @@ pipeline {
                     sh 'kubectl apply -f deployment/service.yml'
                     sh "kubectl set image deployment weather-app weather-app=${image}"
                     sh 'kubectl rollout status deployment weather-app'
-                    sh 'kubectl wait --for=condition=Ready --timeout=-1s pod -l app=weather-app'
                     sh 'kubectl get nodes'
                     sh 'kubectl get deployments'
                     sh 'kubectl get pod -o wide'
@@ -71,14 +70,12 @@ pipeline {
                     script {
                         hostname = sh(script:'kubectl get service weather-app -o jsonpath={.status.loadBalancer.ingress[0].hostname}', returnStdout: true)
                     }
-                }
-                echo "Access weather-app here: http://${hostname}:3000"
-            }
+                }            }
         }
         stage('Test') {
             steps {
                 echo 'Testing if weather-app is running'
-                sh "curl -Is http://${hostname}:3000 | head -n 1"
+                sh "if curl -Is http://${hostname}:3000 | head -n 1 | grep '200 OK'; then echo 'Weather-app can be accessed here: http://${hostname}:3000'; else exit 1 ; fi"
             }
         }
         stage("Cleanup") {
