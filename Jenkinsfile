@@ -32,14 +32,14 @@ pipeline {
                     image = sh(script:'echo "olyudchik/weather-app:$(date +%Y.%m.%d-%H.%M)-$(git rev-parse --short HEAD)"', returnStdout: true).trim().toLowerCase()
                 }
                 echo "Docker image: ${image}"
+                sh "docker tag weather-app:latest ${image}"
+                sh 'docker image list'
             }
         }
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing docker image'
                 withDockerRegistry([ url: '', credentialsId: 'dockerHubCredentials']) {
-                    sh "docker tag weather-app:latest ${image}"
-                    sh 'docker image list'
                     sh "docker push ${image}"
                 }
             }
@@ -61,6 +61,8 @@ pipeline {
                     sh 'kubectl apply -f deployment/secret.yml'
                     sh 'kubectl apply -f deployment/deployment.yml'
                     sh 'kubectl apply -f deployment/service.yml'
+                    sh "kubectl set image deployment weather-app weather-app=${image}"
+                    sh 'kubectl rollout status deployment weather-app'
                     sh 'kubectl wait --for=condition=Ready --timeout=-1s pod -l app=weather-app'
                     sh 'kubectl get nodes'
                     sh 'kubectl get deployments'
