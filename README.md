@@ -51,5 +51,92 @@ These include:
 - `run_kubernetes:sh`: script file to run on Kubernetes locally with minikube
 - `upload_docker.sh`: script file to tag a local docker image and push it to docker hub
 
-
 ---
+
+## Set Up Jenkins Server
+
+Although you can install the Jenkins server on your local machine, it is recommended to do it on an EC2 instance to have the server running all the time. 
+
+Here are the manual steps that you need to perform to set up a Jenkins server:
+* Create EC2 instance with Ubuntu Server 18.04/20.04 LTS. Make sure that SSH port 22 and Jenkins port 8080 are open for access.
+* On your EC2 instance, install Java 8/Java 11 and verify your installation.
+    ``` bash
+    sudo apt-get update
+    sudo apt-get install openjdk-8-jdk
+    java --version
+    ```
+* Install Jenkins and verify the installation (jenkins.service status should be Actice)
+    ``` bash
+    wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+    sudo sh -c 'echo deb https://pkg.jenkins.io/debian binary/ > \
+        /etc/apt/sources.list.d/jenkins.list'
+    sudo apt-get update
+    sudo apt-get install jenkins
+    sudo systemctl status jenkins
+    ```
+* Configure Jenkins with GUI. Head over to the URL http://your-ec2-instance-ip:8080 and fill in the administrator password, which you can get by running
+     ``` bash
+    sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+    ```
+    Then, simply follow the Jenkins pop-up configuration steps to install suggested plugins and create the first admin user.
+
+* On Jenkins, install BlueOcean plugin following [these](https://www.jenkins.io/doc/book/blueocean/getting-started/) instructions.
+* Set up a Pipeline project using Blue Ocean. Follow [these](https://www.jenkins.io/doc/book/blueocean/creating-pipelines/) instructions to create a new pipeline depending on where you store your code: standard Git repository, GitHub or Bitbucket.
+* On your EC2 instance, install nodejs and npm to run the build and lint jobs and verify the installation.
+    ``` bash
+    sudo apt update
+    sudo apt install nodejs npm
+    node --version
+    ```
+* Install docker and verify your installation (docker.service status should be Active).
+    ``` bash
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+    sudo apt update
+    sudo apt-cache policy docker-ce
+    sudo apt install docker-ce
+    sudo systemctl status docker
+    ```
+* Configure permissions for the Jenkins user to run docker.
+    ``` bash
+    sudo usermod -aG docker jenkins
+    ```
+* On Jenkins, install the [Docker Pipeline](https://plugins.jenkins.io/docker-workflow/) plugin.
+* To allow Jenkins to push to your docker repository, create new credentials with your Docker Hub account details. On Jenkins, go to **Credentials → System → Global credentials → Add credentials**, chose the *Username with Password* kind and fill out the form with your username and password, id (e.g. *dockerHubCredentials*) and description. Refer to this id in your Jenkinsfile for authentication
+    ``` bash
+    withDockerRegistry([ url: '', credentialsId: 'dockerHubCredentials']) {
+        sh "docker push ${image}"
+    }
+    ```
+* On your EC2 instance, install AWS CLI version 2 and verify your installation.
+    ```bash
+    sudo apt install unzip
+    sudo apt install glibc-source
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+    aws --version
+    ```
+* On Jenkins, install the [Pipeline: AWS Steps](https://plugins.jenkins.io/pipeline-aws/) plugin.
+* To allow Jenkins to run commands in AWS, create new credentials with your AWS details. On Jenkins, go to **Credentials → System → Global credentials → Add credentials**, chose the *AWS Credentials* kind and fill out the form with your aws access and secret keys, id (e.g. *awsCredentials*) and description. Refer to this id in your Jenkinsfile for authentication
+    ``` bash
+    withAWS(region: 'us-west-2', credentials: 'awsCredentials') {
+        sh 'aws eks --region us-west-2 update-kubeconfig --name weather-app'
+    }
+    ```
+* On your EC2 instance, install kubectl and verify your installation.
+    ```bash
+    curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+    chmod +x ./kubectl
+    sudo mv ./kubectl /usr/local/bin
+    which kubectl
+    kubectl version
+    ```
+* Finally, restart Jenkins to apply all the changes.
+    ``` bash
+    sudo systemctl restart jenkins
+    ```
+
