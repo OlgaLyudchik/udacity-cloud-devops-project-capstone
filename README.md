@@ -53,9 +53,56 @@ These include:
 
 ---
 
+## Local Deployment
+
+The application for the project represents a web application built using JavaScript, Node.js and Express. It serves as a web service that shows you the current weather in the city, using the OpenWeather API. 
+
+### Prerequisites
+
+To test the deployment locally, make sure you have the following tools installed on your machine:
+
+* `nodejs`
+* `npm`
+* `docker`
+* `kubectl`
+* `minikube`
+
+Also, you would need a DockerHub account to upload the docker images. If you don't have it already, follow [these](https://docs.docker.com/docker-hub/) instructions to set it up.
+
+Finally, configure the environment variables: the PORT, on which the application is going to run, and the API_KEY, which you can get from OpenWeather following [these](https://openweathermap.org/appid) instructions.
+
+
+### Run application standalone
+
+* Install required dependencies
+    ``` bash
+    cd weather-app
+    npm install
+    ```
+* Start the webserver
+    ``` bash
+    npm start
+    ```
+* Access running application at http://localhost:{PORT}
+
+### Run application in Docker
+
+* Make sure, you have the `.env` file in the root folder, which contains PORT and API_KEY. 
+* Run `./run_docker.sh` to build the docker image from Dockerfile and start the application in the container.
+* Upload your docker image to DockerHub by running `./upload_docker.sh`. Substitute the *dockerpath* with the path to your DockerHub repository.
+
+### Run application in Kubernetes with minikube
+
+* Set up PORT and API_KEY environment variables in Kubernetes.
+
+    Definition of environment variables in Kubernetes can be done in multiple ways. Server parameters such as PORT, can be configured using `ConfigMap`. Go to `deployment/config.yml` to set your PORT value. On the other hand, for sensitive information, such as passwords, keys and tokens, it is better to use `Secrets`, where the data is stored in encoded form using base64. Therefore, first, convert your API_KEY to base64 as follows `echo -n 'your-openweather-api-key' | base64`. Then, go to `deployment/secret.yml` to set this API_KEY encoded value.
+
+* Make sure, you have uploaded your docker image to DockerHub by running `./upload_docker.sh` as described in the previous section.
+* Run `./run_kubernetes.sh` to deploy the application to minikube cluster.
+
 ## Create Kubernetes Cluster in AWS
 
-To create and manage the Kubernetes cluster, it's convinient to use [eksctl](https://eksctl.io/) CLI tool. It uses AWS CloudFormation to provision and configure resources for Amazon EKS clusters and node groups. Make sure, you installed kubectl and eksctl on your machine and configured [IAM permissions](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html) for your user to work with Amazon EKS. Then, run the following command
+To create and manage the Kubernetes cluster, it's convenient to use [eksctl](https://eksctl.io/) CLI tool. It uses AWS CloudFormation to provision and configure resources for Amazon EKS clusters and node groups. Make sure, you installed kubectl and eksctl on your machine and configured [IAM permissions](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html) for your user to work with Amazon EKS. Then, run the following command
 ``` bash
 ./infrastructure/create_eks_cluster.sh
 ```
@@ -146,4 +193,3 @@ Here are the manual steps that you need to perform to set up a Jenkins server:
     ``` bash
     sudo systemctl restart jenkins
     ```
-    
