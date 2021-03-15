@@ -53,6 +53,13 @@ These include:
 
 ---
 
+## Create Kubernetes Cluster in AWS
+
+To create and manage the Kubernetes cluster, it's convinient to use [eksctl](https://eksctl.io/) CLI tool. It uses AWS CloudFormation to provision and configure resources for Amazon EKS clusters and node groups. Make sure, you installed kubectl and eksctl on your machine and configured [IAM permissions](https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html) for your user to work with Amazon EKS. Then, run the following command
+``` bash
+./infrastructure/create_eks_cluster.sh
+```
+
 ## Set Up Jenkins Server
 
 Although you can install the Jenkins server on your local machine, it is recommended to do it on an EC2 instance to have the server running all the time. 
@@ -139,4 +146,4 @@ Here are the manual steps that you need to perform to set up a Jenkins server:
     ``` bash
     sudo systemctl restart jenkins
     ```
-
+    
