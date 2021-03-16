@@ -6,6 +6,11 @@ pipeline {
         HOME = '.'
     }
     stages {
+        stage('Checkout') {
+            steps {
+                scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+            }
+        }
         stage('Build') {
             steps {
                 dir('weather-app') {
