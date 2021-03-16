@@ -44,6 +44,7 @@ These include:
 - `screenshots/[S08]_running_eks_nodes_in_aws_console.png`: running EC2 instances of EKS nodes in AWS console
 - `screenshots/[S09]_successful_deployment_rollout.png`: successfully rolled out deployment with new pods running and old terminating
 - `screenshots/[S10]_running_application.png`: Chrome-tab with running application 
+- `screenshots/[S11]_slack_integration.png`: notifications are sent to project channel in Slack 
 
 > ### Utils:
 
