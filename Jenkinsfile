@@ -85,4 +85,18 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+           script {
+                def message=":female-judge: Weather-app verification is successful for ${image}"
+                slackSend (channel: "weather-app-ci", color: '#88FF88', tokenCredentialId: 'slackCredentials', message: "${message}")
+            }
+        } 
+        failure {
+            script {
+                def message=":female-judge: Weather-app verification failed for ${image}"
+                slackSend (channel: "weather-app-ci", color: '#FF0000', tokenCredentialId: 'slackCredentials', message: "${message}")
+            }
+        }
+    }
 }
