@@ -190,6 +190,15 @@ Here are the manual steps that you need to perform to set up a Jenkins server:
     which kubectl
     kubectl version
     ```
+* On Jenkins, install the [Slack Notification](https://plugins.jenkins.io/slack/) plugin. 
+* To allow Jenkins to push notifications to the Slack workspace, configure your Slack credentials and other parameters by following [these](https://my.slack.com/services/new/jenkins-ci) steps. Refer to the credentials in your Jenkinsfile for authentication
+    ``` bash
+    slackSend (channel: "weather-app-ci", color: '#88FF88', tokenCredentialId: 'slackCredentials', message: "${message}")
+    ```
+
+* On Jenkins, install the [SCM Skip](https://plugins.jenkins.io/scmskip/) plugin. 
+* To activate the skip ci settings for a Multibranch Pipeline, from the configuration page of your job go to **Branch Sources → Property strategy**. Select *Named branches get different properties*. Click **Add exception** and enter the branch name to which you want to apply the skip settings. Click **Add property**, choose *Suppress automatic SCM triggering* and **Save**.
+
 * Finally, restart Jenkins to apply all the changes.
     ``` bash
     sudo systemctl restart jenkins
